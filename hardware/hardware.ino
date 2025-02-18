@@ -7,6 +7,9 @@
 
 // IMPORT ALL REQUIRED LIBRARIES
 #include <rom/rtc.h>
+#include <SPI.h>
+#include "Adafruit_GFX.h"
+#include "Adafruit_ILI9341.h"
 
 
 
@@ -35,8 +38,18 @@
 
 
 // DEFINE VARIABLES
+uint8_t currentDigit = 1, dig1, dig2, dig3, dig4;  // Keeps track of the current digit being modified by the potentiometer  
+bool lockState = false;    // keeps track of the Open and Close state of the lock 
 
-
+#define TFT_DC    17
+#define TFT_CS    5
+#define TFT_RST   16
+#define TFT_CLK   18
+#define TFT_MOSI  23
+#define TFT_MISO  19
+#define btn1      27
+#define btn2      25
+#define btn3      32
 
 
 // IMPORT FONTS FOR TFT DISPLAY
@@ -47,14 +60,18 @@
 
 
 // MQTT CLIENT CONFIG  
-static const char* pubtopic      = "620012345";                    // Add your ID number here
-static const char* subtopic[]    = {"620012345_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
-static const char* mqtt_server   = "address or ip";         // Broker IP address or Domain name as a String 
-static uint16_t mqtt_port        = 1883;
+static const char* pubtopic       = "620148117";                    // Add your ID number here
+static const char* subtopic[]     = {"620148117_sub","/elet2415"};  // Array of Topics(Strings) to subscribe to
+static const char* mqtt_server    = "yanacreations.com";                // Broker IP address or Domain name as a String 
+static uint16_t mqtt_port         = 1883;
 
 // WIFI CREDENTIALS
-const char* ssid       = "YOUR_SSID"; // Add your Wi-Fi ssid
-const char* password   = "YOUR_PASS"; // Add your Wi-Fi password 
+const char* ssid                  = "MonaConnect"; // Add your Wi-Fi ssid
+const char* password              = ""; // Add your Wi-Fi password 
+//const char* ssid                  = "UNTC-Connect"; // Add your Wi-Fi ssid
+//const char* password              = "risenlord^19"; // Add your Wi-Fi password 
+//const char* ssid                  = "DESKTOP-PJ8NO24 8386"; // Add your Wi-Fi ssid
+//const char* password              = "7(3P4i45"; // Add your Wi-Fi password 
 
 
 
@@ -114,6 +131,12 @@ void setup() {
   // CONFIGURE THE ARDUINO PINS OF THE 7SEG AS OUTPUT
  
   /* Configure all others here */
+  tft.begin();
+  tft.fillScreen(ILI9341_WHITE);
+  tft.drawRGBBitmap(0,0, lockclose, 240, 320); // DRAW IMAGE ON SCREEN
+  tft.setFont("FreeSansBold18pt7b"); 
+  tft.setTextColor(ILI9341_WHITE);
+  tft.setTextSize(2);
 
   initialize();           // INIT WIFI, MQTT & NTP 
   vButtonCheckFunction(); // UNCOMMENT IF USING BUTTONS THEN ADD LOGIC FOR INTERFACING WITH BUTTONS IN THE vButtonCheck FUNCTION
@@ -124,6 +147,29 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly: 
+  uint8_t add = analogRead(pass)/455;
+
+  switch(currentDigit){
+    case 1:
+    dig1 = add%10;
+    digit1();
+    break;
+
+    case 2:
+    dig2 = add%10;
+    digit2();
+    break;
+
+    case 3:
+    dig3 = add%10;
+    digit3();
+    break;
+
+    case 4:
+    dig4 = add%10;
+    digit4();
+    break;
+  }
 
  
 
@@ -144,10 +190,20 @@ void vButtonCheck( void * pvParameters )  {
         // then execute appropriate function if a button is pressed  
 
         // 1. Implement button1  functionality
+        if (!digitalRead(btn1)){
+          currentDigit = currentDigit%4 + 1;
+        }
 
         // 2. Implement button2  functionality
+        else if (!digitalRead(btn2)){
+          checkPasscode();
+        }
 
         // 3. Implement button3  functionality
+        else if (!digitalRead(btn3)){
+          lockState = false;
+          showLockState();
+        }
        
         vTaskDelay(200 / portTICK_PERIOD_MS);  
     }
@@ -187,6 +243,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
  
   // CONVERT MESSAGE TO JSON
+  StaticJsonDocument<1000> doc;
+  DeserializationError error = deserializeJson(doc, received);  
+
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return;
+  }
 
 
   // PROCESS MESSAGE
@@ -215,40 +279,52 @@ void digit1(uint8_t number){
   // CREATE BOX AND WRITE NUMBER IN THE BOX FOR THE FIRST DIGIT
   // 1. Set font to FreeSansBold18pt7b 
   // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like 
+  tft.fillRoundRect(10, 270, 25, 35, 5, ILI9341_BLUE);
   // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box 
+  tft.setCursor(20, 275);
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
-  // 6. Print number to the screen 
+  // 6. Print number to the screen
+  tft.print(dig1); 
 }
  
 void digit2(uint8_t number){
   // CREATE BOX AND WRITE NUMBER IN THE BOX FOR THE SECOND DIGIT
   // 1. Set font to FreeSansBold18pt7b 
   // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like 
+  tft.fillRoundRect(60, 270, 25, 35, 5, ILI9341_BLUE);
   // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box 
+  tft.setCursor(70, 275);
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
   // 6. Print number to the screen 
+  tft.print(dig2); 
 }
 
 void digit3(uint8_t number){
   // CREATE BOX AND WRITE NUMBER IN THE BOX FOR THE THIRD DIGIT
   // 1. Set font to FreeSansBold18pt7b 
   // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like 
-  // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box 
+  tft.fillRoundRect(110, 270, 25, 35, 5, ILI9341_BLUE);
+  // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box
+  tft.setCursor(120, 275); 
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
   // 6. Print number to the screen 
+  tft.print(dig3); 
 }
 
 void digit4(uint8_t number){
   // CREATE BOX AND WRITE NUMBER IN THE BOX FOR THE FOURTH DIGIT
   // 1. Set font to FreeSansBold18pt7b 
-  // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like 
-  // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box 
+  // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like
+  tft.fillRoundRect(160, 270, 25, 35, 5, ILI9341_BLUE); 
+  // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box
+  tft.setCursor(170, 275);  
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
-  // 6. Print number to the screen 
+  // 6. Print number to the screen  
+  tft.print(dig4); 
 }
  
  
@@ -267,6 +343,8 @@ void checkPasscode(void){
       char message[20];  // Store the 4 digit passcode that will be sent to the backend for validation via HTTP POST
       
       // 2. Insert all four (4) digits of the passcode into a string with 'passcode=1234' format and then save this modified string in the message[20] variable created above 
+
+      snprintf(message, "passcode=%d%d%d%d",dig1,dig2,dig3,dig4);
        
                       
       int httpResponseCode = http.POST(message);  // Send HTTP POST request and then wait for a response
@@ -277,12 +355,24 @@ void checkPasscode(void){
         String received = http.getString();
        
         // 3. CONVERT 'received' TO JSON. 
+        StaticJsonDocument<1000> doc;
+        DeserializationError error = deserializeJson(doc, received);  
+
+        if (error) {
+          Serial.print("deserializeJson() failed: ");
+          Serial.println(error.c_str());
+          return;
+        }
         
 
         // 4. PROCESS MESSAGE. The response from the route that is used to validate the passcode
         // will be either {"status":"complete","data":"complete"}  or {"status":"failed","data":"failed"} schema.
         // (1) if the status is complete, set the lockState variable to true, then invoke the showLockState function
         // (2) otherwise, set the lockState variable to false, then invoke the showLockState function
+
+        const char* status = doc["status"];
+        lockState = (status=="complete");
+        showLockState();
               
       }     
         

@@ -21,7 +21,7 @@ void setup(){
   tft.fillScreen(ILI9341_WHITE);
   tft.drawRGBBitmap(0,0, uwi, 240, 320); // DRAW IMAGE ON SCREEN
   tft.setTextColor(ILI9341_RED);
-  tft.setTextSize(2);
+  tft.setTextSize(1);
  
 }
 void loop(void) { 

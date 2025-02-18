@@ -6,14 +6,18 @@
    
 //**********ENTER IP ADDRESS OF SERVER******************//
 
-#define HOST_IP     "localhost"       // REPLACE WITH IP ADDRESS OF SERVER ( IP ADDRESS OF COMPUTER THE BACKEND IS RUNNING ON) 
+#define HOST_IP     "172.16.192.83"       // REPLACE WITH IP ADDRESS OF SERVER ( IP ADDRESS OF COMPUTER THE BACKEND IS RUNNING ON) 
 #define HOST_PORT   "8080"            // REPLACE WITH SERVER PORT (BACKEND FLASK API PORT)
 #define route       "api/update"      // LEAVE UNCHANGED 
-#define idNumber    "620012345"       // REPLACE WITH YOUR ID NUMBER 
+#define idNumber    "620148117"       // REPLACE WITH YOUR ID NUMBER 
 
 // WIFI CREDENTIALS
-#define SSID        "YOUR WIFI"      // "REPLACE WITH YOUR WIFI's SSID"   
-#define password    "YOUR PASSWORD"  // "REPLACE WITH YOUR WiFi's PASSWORD" 
+#define SSID        "MonaConnect"       // "REPLACE WITH YOUR WIFI's SSID"   
+#define password    ""                  // "REPLACE WITH YOUR WiFi's PASSWORD" 
+//#define SSID        "UNTC-Connect"      // "REPLACE WITH YOUR WIFI's SSID"   
+//#define password    "risenlord^19"      // "REPLACE WITH YOUR WiFi's PASSWORD" 
+//#define SSID        "DESKTOP-PJ8NO24 8386"      // "REPLACE WITH YOUR WIFI's SSID"   
+//#define password    "7(3P4i45"          // "REPLACE WITH YOUR WiFi's PASSWORD" 
 
 #define stay        100
  
@@ -23,32 +27,67 @@
 #define espRX         10
 #define espTX         11
 #define espTimeout_ms 300
-
+#define trig          5
+#define echo          4
  
  
 /* Declare your functions below */
- 
+void espSend(char command[]);
+void espUpdate(char mssg[]);
+void espInit(void);
+void wtLevel(void);
+long wtHeight(void);
+long wtReserv(void);
  
 
 SoftwareSerial esp(espRX, espTX); 
  
+long tme, dst, dH = 77.763, eH = 94.5, fR = 30.75, wH, wR;
 
 void setup(){
 
   Serial.begin(115200); 
   // Configure GPIO pins here
+  pinMode(trig, OUTPUT);
+  pinMode(echo, INPUT);
 
- 
 
   espInit();  
  
 }
 
 void loop(){ 
+
+  wtLevel();
+
+  wH = wtHeight();
+
+  wR = wtReserv();
+
+  Serial.print("Distance ");
+  Serial.print(dst);
+  Serial.print("in, Water Height ");
+  Serial.print(wH);
+  Serial.print("in, Reserves ");
+  Serial.print(wR);
+  Serial.println("gal");
+
    
   // send updates with schema ‘{"id": "student_id", "type": "ultrasonic", "radar": 0, "waterheight": 0, "reserve": 0, "percentage": 0}’
+  JsonDocument doc; 
 
+  char message[800]   = {0};
 
+  doc["id"]           = "620148117"; 
+  doc["type"]         = "ultrasonic";
+  doc["radar"]        = dst;
+  doc["waterheight"]  = wH;
+  doc["reserve"]      = wR;
+  doc["percentage"]   = wR/10;
+  
+  serializeJson(doc, message);  
+  
+  espUpdate(message);    
 
   delay(1000);  
 }
@@ -105,5 +144,22 @@ void espInit(){
 }
 
 //***** Design and implement all util functions below ******
- 
+void wtLevel(){
+  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
+  digitalWrite(trig, LOW);
+  delayMicroseconds(5);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  
+  tme = pulseIn(echoPin, HIGH);
+  dst = tme/58.2;
+}
 
+long wtHeight(){
+  return min(dh, 2*eH - (dst+dH));
+}
+
+long wtReserv(){
+  return min(1000,wh*3.14*fR*fR);
+}
