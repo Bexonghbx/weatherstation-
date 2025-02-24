@@ -27,14 +27,96 @@ from math import floor
 
 
 # 1. CREATE ROUTE FOR '/api/set/combination'
+@app.route('/api/set/combination', methods=['POST']) 
+def set_passcode():   
+    '''Returns number which represents the amount of time a specific LED was turned on'''
+    if request.method == "POST":
+        try:
+            form =  request.form
+
+            Code = escape(form.get("code"))
+            code = mongo.updatePasscode(Code)
+            if code:
+                return jsonify({"status":"complete","data": "complete"})
+            
+        except Exception as e:
+            print(f"set_passcode error: f{str(e)}")        
+    return jsonify({"status":"failed","data": "failed"})
     
 # 2. CREATE ROUTE FOR '/api/check/combination'
+@app.route('/api/check/combination', methods=['POST']) 
+def check_passcode():   
+    '''Returns number which represents the amount of time a specific LED was turned on'''
+    if request.method == "POST":
+        try:
+            form =  request.form
+
+            newCode = escape(form.get("passcode"))
+            passcode = mongo.checkPasscode(newCode)
+            if passcode:
+                return jsonify({"status":"complete","data": "complete"})
+            
+        except Exception as e:
+            print(f"check_passcode error: f{str(e)}")        
+    return jsonify({"status":"failed","data": "failed"})
 
 # 3. CREATE ROUTE FOR '/api/update'
+@app.route('/api/update', methods=['POST']) 
+def update_radar():   
+    '''Returns number which represents the amount of time a specific LED was turned on'''
+    if request.method == "POST":
+        try:
+            form =  request.form
+
+            radar = escape(form)
+            passcode = mongo.addUpdate(radar)
+            if passcode:
+                return jsonify({"status":"complete","data": "complete"})
+            
+        except Exception as e:
+            print(f"update_radar error: f{str(e)}")        
+    return jsonify({"status":"failed","data": "failed"})
+
+
    
 # 4. CREATE ROUTE FOR '/api/reserve/<start>/<end>'
+@app.route('/api/reserve/<start>/<end>', methods=['GET']) 
+def get_reserve(start,end):   
+   
+    if request.method == "GET": 
+        '''Add your code here to complete this route'''
+        try:
+            st = escape(start)
+            e  = escape(end)
+            reserve = mongo.getAllInRange(st,e)
+            if reserve:
+                return jsonify({"status":"found","data": reserve})
+            
+        except Exception as e:
+            print(f"getAllInRange error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":0})
 
 # 5. CREATE ROUTE FOR '/api/avg/<start>/<end>'
+@app.route('/api/avg/<start>/<end>', methods=['GET']) 
+def get_reserve_a(start,end):   
+   
+    if request.method == "GET": 
+        '''Add your code here to complete this route'''
+        try:
+            st = escape(start)
+            e  = escape(end)
+            rAVG = mongo.reserveAVG(st,e)
+            if rAVG:
+                return jsonify({"status":"found","data": rAVG})
+            
+        except Exception as e:
+            print(f"get_reserve_a error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":0})
+
 
 
    
