@@ -34,8 +34,8 @@ def set_passcode():
         try:
             form =  request.form
 
-            Code = escape(form.get("code"))
-            code = mongo.updatePasscode(Code)
+            newCode = escape(form.get("passcode"))
+            code = mongo.updatePasscode(newCode)
             if code:
                 return jsonify({"status":"complete","data": "complete"})
             
@@ -47,12 +47,14 @@ def set_passcode():
 @app.route('/api/check/combination', methods=['POST']) 
 def check_passcode():   
     '''Returns number which represents the amount of time a specific LED was turned on'''
+    
     if request.method == "POST":
         try:
-            form =  request.form
+            data = request.form
 
-            newCode = escape(form.get("passcode"))
-            passcode = mongo.checkPasscode(newCode)
+            Code = data.get("passcode")
+            passcode = mongo.checkPasscode(Code)
+            print("Passcode ",passcode)
             if passcode:
                 return jsonify({"status":"complete","data": "complete"})
             
@@ -66,9 +68,10 @@ def update_radar():
     '''Returns number which represents the amount of time a specific LED was turned on'''
     if request.method == "POST":
         try:
-            form =  request.form
+            data =  request.json
+            data["timestamp"] = datetime.now()
 
-            radar = escape(form)
+            radar = json.dumps(data)
             passcode = mongo.addUpdate(radar)
             if passcode:
                 return jsonify({"status":"complete","data": "complete"})

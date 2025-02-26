@@ -1,12 +1,13 @@
 
 #include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 // IMPORT ALL REQUIRED LIBRARIES
 
 #include <math.h>
    
 //**********ENTER IP ADDRESS OF SERVER******************//
 
-#define HOST_IP     "172.16.192.83"       // REPLACE WITH IP ADDRESS OF SERVER ( IP ADDRESS OF COMPUTER THE BACKEND IS RUNNING ON) 
+#define HOST_IP     "172.16.193.156"       // REPLACE WITH IP ADDRESS OF SERVER ( IP ADDRESS OF COMPUTER THE BACKEND IS RUNNING ON) 
 #define HOST_PORT   "8080"            // REPLACE WITH SERVER PORT (BACKEND FLASK API PORT)
 #define route       "api/update"      // LEAVE UNCHANGED 
 #define idNumber    "620148117"       // REPLACE WITH YOUR ID NUMBER 
@@ -70,11 +71,11 @@ void loop(){
   Serial.print(wH);
   Serial.print("in, Reserves ");
   Serial.print(wR);
-  Serial.println("gal");
+  Serial.println(" gal");
 
    
   // send updates with schema ‘{"id": "student_id", "type": "ultrasonic", "radar": 0, "waterheight": 0, "reserve": 0, "percentage": 0}’
-  JsonDocument doc; 
+  StaticJsonDocument<1000> doc; 
 
   char message[800]   = {0};
 
@@ -89,7 +90,7 @@ void loop(){
   
   espUpdate(message);    
 
-  delay(1000);  
+  delay(000);  
 }
 
  
@@ -101,7 +102,7 @@ void espSend(char command[] ){
 
 void espUpdate(char mssg[]){ 
     char espCommandString[50] = {0};
-    char post[290]            = {0};
+    char post[1000]            = {0};
 
     snprintf(espCommandString, sizeof(espCommandString),"AT+CIPSTART=\"TCP\",\"%s\",%s\r\n",HOST_IP,HOST_PORT); 
     espSend(espCommandString);    //starts the connection to the server
@@ -152,14 +153,14 @@ void wtLevel(){
   delayMicroseconds(10);
   digitalWrite(trig, LOW);
   
-  tme = pulseIn(echoPin, HIGH);
+  tme = pulseIn(echo, HIGH);
   dst = tme/58.2;
 }
 
 long wtHeight(){
-  return min(dh, 2*eH - (dst+dH));
+  return max(0, 2*eH - (dst+dH));
 }
 
 long wtReserv(){
-  return min(1000,wh*3.14*fR*fR);
+  return wH*3.14*fR*fR;
 }

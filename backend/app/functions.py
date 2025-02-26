@@ -84,7 +84,7 @@ class DB:
         '''RETURNS MIN, MAX, AVG AND RANGE FOR HUMIDITY. THAT FALLS WITHIN THE START AND END DATE RANGE'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = list(remotedb.ELET2415.radar.aggregate([{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': ,'reserve':{'$push':"$$ROOT.reserve"}}},{'$project':{'average':{'$avg':'$reserve'}, '_id':0}}]))
+            result      = list(remotedb.ELET2415.radar.aggregate([{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': "",'reserve':{'$push':"$$ROOT.reserve"}}},{'$project':{'avg':{'$avg':'$reserve'}, '_id':0}}]))
         except Exception as e:
             msg = str(e)
             print("reserveAVG error ",msg)            
@@ -97,7 +97,7 @@ class DB:
         '''ADD A NEW STORAGE LOCATION TO COLLECTION'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = remotedb.ELET2415.radar.find_one_and_update({"type":"passcode"},{"$set":{"code":code}})
+            result      = remotedb.ELET2415.code.find_one_and_update({"type":"passcode"},{"$set":{"code":int(code)}}, upsert=True)
         except Exception as e:
             msg = str(e)
             if "duplicate" not in msg:
@@ -113,11 +113,12 @@ class DB:
         '''ADD A NEW STORAGE LOCATION TO COLLECTION'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = list(remotedb.ELET2415.radar.count_documents({"code":code}))
+            print("checkPasscode ",code)
+            result      = remotedb.ELET2415.code.count_documents({"code":int(code)})
         except Exception as e:
             msg = str(e)
             print("checkPasscode error ",msg)
-        else:                  
+        else:               
             return result
 
 

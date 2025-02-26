@@ -34,12 +34,17 @@
 #ifndef ARDUINO_H
 #include <Arduino.h>
 #endif 
+
+#ifndef ARDUINOJSON_H
+#include <ArduinoJson.h>
+#endif
  
 
 
 // DEFINE VARIABLES
 uint8_t currentDigit = 1, dig1, dig2, dig3, dig4;  // Keeps track of the current digit being modified by the potentiometer  
 bool lockState = false;    // keeps track of the Open and Close state of the lock 
+uint16_t add = 0;
 
 #define TFT_DC    17
 #define TFT_CS    5
@@ -50,6 +55,7 @@ bool lockState = false;    // keeps track of the Open and Close state of the loc
 #define btn1      27
 #define btn2      25
 #define btn3      32
+#define inpt      34
 
 
 // IMPORT FONTS FOR TFT DISPLAY
@@ -113,8 +119,10 @@ void showLockState(void);
 #endif
 
 
-/* Initialize class objects*/
 
+
+/* Initialize class objects*/
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
 
 
  
@@ -131,43 +139,51 @@ void setup() {
   // CONFIGURE THE ARDUINO PINS OF THE 7SEG AS OUTPUT
  
   /* Configure all others here */
+  pinMode(btn1, INPUT_PULLUP);
+  pinMode(btn2, INPUT_PULLUP);
+  pinMode(btn3, INPUT_PULLUP);
   tft.begin();
   tft.fillScreen(ILI9341_WHITE);
-  tft.drawRGBBitmap(0,0, lockclose, 240, 320); // DRAW IMAGE ON SCREEN
-  tft.setFont("FreeSansBold18pt7b"); 
-  tft.setTextColor(ILI9341_WHITE);
-  tft.setTextSize(2);
-
+  tft.drawRGBBitmap(68,10, lockclose, 104, 103);
+  tft.setFont(&FreeSansBold9pt7b);  
+  tft.setTextColor(ILI9341_RED);
+  tft.setTextSize(1);
+  digit1(0);
+  digit2(0);
+  digit3(0);
+  digit4(0);
   initialize();           // INIT WIFI, MQTT & NTP 
   vButtonCheckFunction(); // UNCOMMENT IF USING BUTTONS THEN ADD LOGIC FOR INTERFACING WITH BUTTONS IN THE vButtonCheck FUNCTION
-
+  pinMode(2, OUTPUT);
+  digitalWrite(2, HIGH);
 }
   
 
 
 void loop() {
   // put your main code here, to run repeatedly: 
-  uint8_t add = analogRead(pass)/455;
+  add = analogRead(inpt)/40;//455;
+  Serial.println(add);
 
   switch(currentDigit){
     case 1:
     dig1 = add%10;
-    digit1();
+    digit1(dig1);
     break;
 
     case 2:
     dig2 = add%10;
-    digit2();
+    digit2(dig2);
     break;
 
     case 3:
     dig3 = add%10;
-    digit3();
+    digit3(dig3);
     break;
 
     case 4:
     dig4 = add%10;
-    digit4();
+    digit4(dig4);
     break;
   }
 
@@ -281,11 +297,11 @@ void digit1(uint8_t number){
   // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like 
   tft.fillRoundRect(10, 270, 25, 35, 5, ILI9341_BLUE);
   // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box 
-  tft.setCursor(20, 275);
+  tft.setCursor(15, 295);
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
   // 6. Print number to the screen
-  tft.print(dig1); 
+  tft.print(number); 
 }
  
 void digit2(uint8_t number){
@@ -294,11 +310,11 @@ void digit2(uint8_t number){
   // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like 
   tft.fillRoundRect(60, 270, 25, 35, 5, ILI9341_BLUE);
   // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box 
-  tft.setCursor(70, 275);
+  tft.setCursor(65, 295);
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
   // 6. Print number to the screen 
-  tft.print(dig2); 
+  tft.print(number); 
 }
 
 void digit3(uint8_t number){
@@ -307,11 +323,11 @@ void digit3(uint8_t number){
   // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like 
   tft.fillRoundRect(110, 270, 25, 35, 5, ILI9341_BLUE);
   // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box
-  tft.setCursor(120, 275); 
+  tft.setCursor(115, 295); 
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
   // 6. Print number to the screen 
-  tft.print(dig3); 
+  tft.print(number); 
 }
 
 void digit4(uint8_t number){
@@ -320,11 +336,11 @@ void digit4(uint8_t number){
   // 2. Draw a filled rounded rectangle close to the bottom of the screen. Give it any colour you like
   tft.fillRoundRect(160, 270, 25, 35, 5, ILI9341_BLUE); 
   // 3. Set cursor to the appropriate coordinates in order to write the number in the middle of the box
-  tft.setCursor(170, 275);  
+  tft.setCursor(165, 295);  
   // 4. Set the text colour of the number. Use any colour you like 
   // 5. Set font size to one 
   // 6. Print number to the screen  
-  tft.print(dig4); 
+  tft.print(number); 
 }
  
  
@@ -336,7 +352,7 @@ void checkPasscode(void){
     if(WiFi.status()== WL_CONNECTED){ 
       
       // 1. REPLACE LOCALHOST IN THE STRING BELOW WITH THE IP ADDRESS OF THE COMPUTER THAT YOUR BACKEND IS RUNNING ON
-      http.begin(client, "http://localhost:8080/api/check/combination"); // Your Domain name with URL path or IP address with path 
+      http.begin(client, "http://172.16.193.156:8080/api/check/combination"); // Your Domain name with URL path or IP address with path 
  
       
       http.addHeader("Content-Type", "application/x-www-form-urlencoded"); // Specify content-type header      
@@ -344,7 +360,8 @@ void checkPasscode(void){
       
       // 2. Insert all four (4) digits of the passcode into a string with 'passcode=1234' format and then save this modified string in the message[20] variable created above 
 
-      snprintf(message, "passcode=%d%d%d%d",dig1,dig2,dig3,dig4);
+      snprintf(message, sizeof(message), "passcode=%d%d%d%d",dig1,dig2,dig3,dig4);
+          Serial.println(message);
        
                       
       int httpResponseCode = http.POST(message);  // Send HTTP POST request and then wait for a response
@@ -371,7 +388,10 @@ void checkPasscode(void){
         // (2) otherwise, set the lockState variable to false, then invoke the showLockState function
 
         const char* status = doc["status"];
-        lockState = (status=="complete");
+        Serial.println(status);
+        lockState = false;
+        if (strcmp(status, "complete")==0){lockState = true;}
+        Serial.println(lockState);
         showLockState();
               
       }     
@@ -410,7 +430,8 @@ void showLockState(void){
       tft.setCursor(50, 200);  
       tft.setTextColor(ILI9341_RED); 
       tft.printf("Access Denied"); 
-    }
+    } 
+  tft.setTextColor(ILI9341_RED);
     
 }
  
