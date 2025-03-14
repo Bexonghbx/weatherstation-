@@ -16,7 +16,7 @@ class MQTT:
     ID = f"IOT_B_{randint(1,1000000)}"
 
     #  DEFINE ALL TOPICS TO SUBSCRIBE TO
-    sub_topics = [("620012345_pub", 0), ("620012345", 0), ("620012345_sub", 0)] #  A list of tuples of (topic, qos). Both topic and qos must be present in the tuple.
+    sub_topics = [("620148117_pub", 0), ("620148117", 0), ("620148117_sub", 0)] #  A list of tuples of (topic, qos). Both topic and qos must be present in the tuple.
 
 
     def __init__(self,mongo):
@@ -34,11 +34,10 @@ class MQTT:
 
 
         # REGISTER CALLBACK FUNCTION FOR EACH TOPIC
-        self.client.message_callback_add("620012345", self.update)
-        self.client.message_callback_add("620012345_pub", self.toggle)
+        self.client.message_callback_add("620148117", self.update)
 
         # ADD MQTT SERVER AND PORT INFORMATION BELOW
-        self.client.connect_async("www.yanacreations.com", 1883, 60)
+        self.client.connect_async("yanacreations.com", 1883, 60)
        
 
 
@@ -87,11 +86,12 @@ class MQTT:
             payload = msg.payload.decode("utf-8")
             # print(payload) # UNCOMMENT WHEN DEBUGGING  
             
-            update  = loads(payload) # CONVERT FROM JSON STRING TO JSON OBJECT  
-            print(update) 
+            readings  = loads(payload) # CONVERT FROM JSON STRING TO JSON OBJECT  
+            # print(update) 
+            self.mongo.weatherUpdate(readings) # INSERT INTO DATABASE 
 
         except Exception as e:
-            print(f"MQTT: GDP Error: {str(e)}")
+            print(f"MQTT: Weather Error: {str(e)}")
 
     def toggle(self,client, userdata, msg):    
         '''Process messages from Frontend'''

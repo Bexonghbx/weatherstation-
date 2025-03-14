@@ -14,16 +14,8 @@
 
                             <!-- Add Links Below --> 
 
-                            <RouterLink class="route" to="/control">
-                                <VBtn class="text-subtitle-2" density="compact" color="primary" :variant="(route.name == 'Control')? 'tonal':'text'">Control</VBtn> 
-                            </RouterLink>    
-
-                            <RouterLink class="route" to="/dashboard">
-                                <VBtn class="text-subtitle-2" density="compact" color="primary" :variant="(route.name == 'Dashboard')? 'tonal':'text'">Dashboard</VBtn> 
-                            </RouterLink>    
-
-                            <RouterLink class="route" to="/analysis">
-                                <VBtn class="text-subtitle-2" density="compact" color="primary" :variant="(route.name == 'Analysis')? 'tonal':'text'">Analysis</VBtn> 
+                            <RouterLink class="route" to="/stream">
+                                <VBtn class="text-subtitle-2" density="compact" color="primary" :variant="(route.name == 'Stream')? 'tonal':'text'">Stream</VBtn> 
                             </RouterLink>    
 
                         </VCol>

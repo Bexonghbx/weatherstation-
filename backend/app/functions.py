@@ -47,16 +47,16 @@ class DB:
  
 
 
-    ####################
-    # LAB 4 FUNCTIONS  #
-    ####################
+    ###############################
+    #  WEATHER STATION FUNCTIONS  #
+    ###############################
     
-    # 1. CREATE FUNCTION TO INSERT DATA IN TO THE RADAR COLLECTION
-    def addUpdate(self,data):
+    # 1. FUNCTION INSERTS DATA IN TO THE WEATHER COLLECTION
+    def weatherUpdate(self,data):
         '''ADD A NEW STORAGE LOCATION TO COLLECTION'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = remotedb.ELET2415.radar.insert_one(data)
+            result      = remotedb.ELET2415.weather.insert_one(data)
         except Exception as e:
             msg = str(e)
             if "duplicate" not in msg:
@@ -71,7 +71,7 @@ class DB:
         '''RETURNS A LIST OF OBJECTS. THAT FALLS WITHIN THE START AND END DATE RANGE'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = list(remotedb.ELET2415.radar.find({'timestamp':{'$gte':int(start),'$lte':int(end)}},{'_id':0}).sort([('timestamp',1)]))
+            result      = list(remotedb.ELET2415.weather.find({'timestamp':{'$gte':int(start),'$lte':int(end)}},{'_id':0}).sort([('timestamp',1)]))
         except Exception as e:
             msg = str(e)
             print("getAllInRange error ",msg)            
@@ -80,11 +80,11 @@ class DB:
 
 
     # 3. CREATE A FUNCTION TO COMPUTE THE ARITHMETIC AVERAGE ON THE 'reserve' FEILED/VARIABLE, USING ALL DOCUMENTS FOUND BETWEEN SPECIFIED START AND END TIMESTAMPS. RETURNS A LIST WITH A SINGLE OBJECT INSIDE
-    def reserveAVG(self,start, end):
+    def tempAVG(self,start, end):
         '''RETURNS MIN, MAX, AVG AND RANGE FOR HUMIDITY. THAT FALLS WITHIN THE START AND END DATE RANGE'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = list(remotedb.ELET2415.radar.aggregate([{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': "",'reserve':{'$push':"$$ROOT.reserve"}}},{'$project':{'avg':{'$avg':'$reserve'}, '_id':0}}]))
+            result      = list(remotedb.ELET2415.weather.aggregate([{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': "",'reserve':{'$push':"$$ROOT.reserve"}}},{'$project':{'avg':{'$avg':'$reserve'}, '_id':0}}]))
         except Exception as e:
             msg = str(e)
             print("reserveAVG error ",msg)            
