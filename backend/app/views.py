@@ -27,98 +27,130 @@ from math import floor
 
 
 # 1. CREATE ROUTE FOR '/api/set/combination'
-@app.route('/api/set/combination', methods=['POST']) 
-def set_passcode():   
-    '''Returns number which represents the amount of time a specific LED was turned on'''
-    if request.method == "POST":
-        try:
-            form =  request.form
-
-            newCode = escape(form.get("passcode"))
-            code = mongo.updatePasscode(newCode)
-            if code:
-                return jsonify({"status":"complete","data": "complete"})
-            
-        except Exception as e:
-            print(f"set_passcode error: f{str(e)}")        
-    return jsonify({"status":"failed","data": "failed"})
-    
-# 2. CREATE ROUTE FOR '/api/check/combination'
-@app.route('/api/check/combination', methods=['POST']) 
-def check_passcode():   
-    '''Returns number which represents the amount of time a specific LED was turned on'''
-    
-    if request.method == "POST":
-        try:
-            data = request.form
-
-            Code = data.get("passcode")
-            passcode = mongo.checkPasscode(Code)
-            print("Passcode ",passcode)
-            if passcode:
-                return jsonify({"status":"complete","data": "complete"})
-            
-        except Exception as e:
-            print(f"check_passcode error: f{str(e)}")        
-    return jsonify({"status":"failed","data": "failed"})
-
-# 3. CREATE ROUTE FOR '/api/update'
-@app.route('/api/update', methods=['POST']) 
-def update_radar():   
-    '''Returns number which represents the amount of time a specific LED was turned on'''
-    if request.method == "POST":
-        try:
-            data =  request.json
-            data["timestamp"] = datetime.now()
-
-            radar = json.dumps(data)
-            passcode = mongo.addUpdate(radar)
-            if passcode:
-                return jsonify({"status":"complete","data": "complete"})
-            
-        except Exception as e:
-            print(f"update_radar error: f{str(e)}")        
-    return jsonify({"status":"failed","data": "failed"})
-
-
+@app.route('/api/weather/<start>/<end>', methods=['GET']) 
+def get_all(start,end):   
    
-# 4. CREATE ROUTE FOR '/api/reserve/<start>/<end>'
-@app.route('/api/reserve/<start>/<end>', methods=['GET']) 
-def get_reserve(start,end):   
-   
-    if request.method == "GET": 
-        '''Add your code here to complete this route'''
+    if request.method == "GET":
         try:
             st = escape(start)
             e  = escape(end)
-            reserve = mongo.getAllInRange(st,e)
-            if reserve:
-                return jsonify({"status":"found","data": reserve})
+            get = mongo.getAllInRange(st,e)
+            if get:
+                return jsonify({"status":"found","data": get})
             
         except Exception as e:
             print(f"getAllInRange error: f{str(e)}")
 
     # FILE DATA NOT EXIST
-    return jsonify({"status":"not found","data":0})
-
-# 5. CREATE ROUTE FOR '/api/avg/<start>/<end>'
-@app.route('/api/avg/<start>/<end>', methods=['GET']) 
-def get_reserve_a(start,end):   
+    return jsonify({"status":"not found","data":[]})
+    
+# 2. CREATE ROUTE FOR '/api/check/combination'
+@app.route('/api/mmar/temperature/celsius/<start>/<end>', methods=['GET']) 
+def get_temp_celsius(start,end):   
    
-    if request.method == "GET": 
-        '''Add your code here to complete this route'''
+    if request.method == "GET":
         try:
             st = escape(start)
             e  = escape(end)
-            rAVG = mongo.reserveAVG(st,e)
-            if rAVG:
-                return jsonify({"status":"found","data": rAVG})
+            get = mongo.celTemperatureMMAR(st,e)
+            if get:
+                return jsonify({"status":"found","data": get})
             
         except Exception as e:
-            print(f"get_reserve_a error: f{str(e)}")
+            print(f"celTemperatureMMAR error: f{str(e)}")
 
     # FILE DATA NOT EXIST
-    return jsonify({"status":"not found","data":0})
+    return jsonify({"status":"not found","data":[]})
+
+@app.route('/api/mmar/hi/celsius/<start>/<end>', methods=['GET']) 
+def get_hi_celsius(start,end):   
+   
+    if request.method == "GET":
+        try:
+            st = escape(start)
+            e  = escape(end)
+            get = mongo.celHeatIndexMMAR(st,e)
+            if get:
+                return jsonify({"status":"found","data": get})
+            
+        except Exception as e:
+            print(f"celHeatIndexMMAR error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":[]})
+
+@app.route('/api/mmar/temperature/fahrenheit/<start>/<end>', methods=['GET']) 
+def get_temp_fahrenheit(start,end):   
+   
+    if request.method == "GET":
+        try:
+            st = escape(start)
+            e  = escape(end)
+            get = mongo.farTemperatureMMAR(st,e)
+            if get:
+                return jsonify({"status":"found","data": get})
+            
+        except Exception as e:
+            print(f"farTemperatureMMAR error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":[]})
+
+@app.route('/api/mmar/hi/fahrenheit/<start>/<end>', methods=['GET']) 
+def get_hi_fahrenheit(start,end):   
+   
+    if request.method == "GET":
+        try:
+            st = escape(start)
+            e  = escape(end)
+            get = mongo.farHeatIndexMMAR(st,e)
+            if get:
+                return jsonify({"status":"found","data": get})
+            
+        except Exception as e:
+            print(f"farHeatIndexMMAR error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":[]})
+
+@app.route('/api/mmar/humidity/<start>/<end>', methods=['GET']) 
+def get_humid(start,end):   
+   
+    if request.method == "GET":
+        try:
+            st = escape(start)
+            e  = escape(end)
+            get = mongo.humidityMMAR(st,e)
+            if get:
+                return jsonify({"status":"found","data": get})
+            
+        except Exception as e:
+            print(f"humidityMMAR error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":[]})
+
+@app.route('/api/mmar/soilmoisture/<start>/<end>', methods=['GET']) 
+def get_moist(start,end):   
+   
+    if request.method == "GET":
+        try:
+            st = escape(start)
+            e  = escape(end)
+            get = mongo.soilMoistureMMAR(st,e)
+            if get:
+                return jsonify({"status":"found","data": get})
+            
+        except Exception as e:
+            print(f"soilMoistureMMAR error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":[]})
+
+# TRY SOMETHING WITH ALTITUDE. YOU'LL REMEMBER WHAT IT WAS// no i freaking did not
+
+
+   
 
 
 

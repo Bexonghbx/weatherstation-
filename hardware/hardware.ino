@@ -134,12 +134,14 @@ double convert_fahrenheit_to_Celsius(double f);
 double calcHeatIndex(double T, double R);
 bool isNumber(double number);
 void serialUpdate(void);
+float s1(int anaMoist);
+float s2(int anaMoist);
 
 
 /* Varialbles */
-double a_max = 0, a_min = 1000, heatindex, heatindexc, temp, tempf, humid, pressure, c1 = -42.379, c2= 2.04901523, c3 = 10.14333127, c4 = -0.22475541, c5 = -6.83783 * 0.001, c6 = -5.481717 * 0.01, c7 = 1.22874 * 0.001, c8 = 8.5282 * 0.0001, c9 = -1.99 * 0.000001;
+double heatindex, heatindexc, temp, tempf, humid, pressure, k2 = -0.156, k = -0.027, e = 2.71828182846, c1 = -42.379, c2= 2.04901523, c3 = 10.14333127, c4 = -0.22475541, c5 = -6.83783 * 0.001, c6 = -5.481717 * 0.01, c7 = 1.22874 * 0.001, c8 = 8.5282 * 0.0001, c9 = -1.99 * 0.000001;
 uint8_t alti;
-int moist;
+int a = 770, a2 = 620, moist;
 
 
  
@@ -245,7 +247,7 @@ void vUpdate( void * pvParameters )  {
           serialUpdate();
 
 
-        if (isNumber(temp)&&((a_max-a_min)>=100)){
+        if (isNumber(temp)){
 
           JsonDocument doc; // Create JSon object
           char message[1100]  = {0};
@@ -377,17 +379,20 @@ void dhtRead(){
 void mstRead(){
   digitalWrite(SOILPWR, HIGH);	// Turn the sensor ON
 	delay(10);	// Allow power to settle
-  double anaMoist = analogRead(SOILMST);
+  int anaMoist = analogRead(SOILMST);	// Read the analog value from sensor
 	digitalWrite(SOILPWR, LOW);		// Turn the sensor OFF
-  a_max = max(a_max,anaMoist);
-  a_min = min(a_min,anaMoist);
-	moist = ((1+a_max- anaMoist)/ (1+a_max-a_min)*1.0) * 100.0;	// Read the analog value from sensor
-  /*Serial.print("Moisture: ");
+	moist = 50 + 50*(s1(anaMoist) + s2(anaMoist) - 1);
+  Serial.print("Analog Moisture: ");
   Serial.println(anaMoist);
-  Serial.print("Max: ");
-  Serial.println(a_max);
-  Serial.print("Min: ");
-  Serial.println(a_min);*/
+  Serial.println("\n");
+}
+
+float s1(int anaMoist){
+  return 1/(1.0+pow(e,(-1.0*k*(anaMoist-a))));
+}
+
+float s2(int anaMoist){
+  return 1/(1.0+pow(e,(-1.0*k2*(anaMoist-a2))));
 }
 
 void tftUpdate(){
@@ -412,9 +417,9 @@ void serialUpdate(){
   Serial.print("Pressure (kPa): ");
   Serial.println(pressure/1000);
   Serial.print("Humidity (%): ");
-  Serial.println(moist);
-  Serial.print("Moisture (%): ");
   Serial.println(humid);
+  Serial.print("Moisture (%): ");
+  Serial.println(moist);
   Serial.print("Alitude (m): ");
   Serial.println(alti);
   Serial.println("\n");

@@ -21,7 +21,7 @@ export const useAppStore =  defineStore('app', ()=>{
         const controller    = new AbortController(); 
         const signal        = controller.signal; 
         const id            = setTimeout(()=>{controller.abort()},60000); 
-        const URL           = `/api/reserve/${start}/${end}`;  
+        const URL           = `/api/weather/${start}/${end}`;  
 
         try { 
             const response  = await fetch(URL,{ method: 'GET', signal: signal  }); 
@@ -51,12 +51,12 @@ export const useAppStore =  defineStore('app', ()=>{
         return [] 
     }
 
-    const getReserveAVG = async (start,end)=>{ 
+    const getCelTempAVG = async (start,end)=>{ 
         // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS 
         const controller    = new AbortController(); 
         const signal        = controller.signal; 
         const id            = setTimeout(()=>{controller.abort()},60000); 
-        const URL           = `/api/avg/${start}/${end}`;  
+        const URL           = `/api/mmar/temperature/celsius/${start}/${end}`;  
 
         try { 
             const response  = await fetch(URL,{ method: 'GET', signal: signal  }); 
@@ -71,7 +71,7 @@ export const useAppStore =  defineStore('app', ()=>{
                         return data["data"]; 
                     }
                     if(data["status"] == "failed"){
-                        console.log("getReserveAVG returned no data"); 
+                        console.log("getCelTempAVG returned no data"); 
                     }
                 }
             }
@@ -81,71 +81,198 @@ export const useAppStore =  defineStore('app', ()=>{
             }
         }
         catch(err){ 
-            console.error('getReserveAVG error: ', err.message); 
+            console.error('getCelTempAVG error: ', err.message); 
         }
         return [] 
     }
 
-    const updatePasscode = async(passcode) => {  
-            
-        const URL           = '/api/set/combination' 
-    
-        // FETCH REQUEST WILL TIMEOUT AFTER 60 SECONDS  
+    const getCelHeatIndexAVG = async (start,end)=>{ 
+        // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS 
         const controller    = new AbortController(); 
         const signal        = controller.signal; 
         const id            = setTimeout(()=>{controller.abort()},60000); 
-        
-        const form          = new FormData();  // Create form 
-        form.append("passcode",passcode);  // Add variable to form 
-    
+        const URL           = `/api/mmar/hi/celsius/${start}/${end}`;  
+
         try { 
-                const response  = await fetch(URL,{ method: 'POST',body:form, signal: signal  }); 
-                
-                if(response.ok){ 
+            const response  = await fetch(URL,{ method: 'GET', signal: signal  }); 
+            if (response.ok){
                 const data      = await response.json(); 
                 let keys        = Object.keys(data); 
-                
-                // console.log(data); 
-        
-                if (keys.includes("status")){ 
-    
-                    if (data["status"] === "complete"){                
-                        console.log(data["data"]);  
-                        return data["data"]                 
-                    }                      
-                    else if (data["status"] === "failed"){      
-                        console.log("Unable to update Passcode");     
-                    }                
-    
-                } 
-                    
-                } 
-                else{ 
-                    const data      = await response.text(); 
-                    console.warn(data);      
-                                
-                    } 
-            
-            } 
-            catch(err){ 
-            loading.value       = false; 
-            if( err.message === "The user aborted a request."){ 
-                console.log("REQUEST TIMEDOUT");   
-            } 
-            console.error('updatePascode error: ', err.message);                
-    
-            } 
-            return 0 
-    }      
- 
+
+                if(keys.includes("status")){ 
+
+                    if(data["status"] == "found" ){ 
+                        // console.log(data["data"]  )   
+                        return data["data"]; 
+                    }
+                    if(data["status"] == "failed"){
+                        console.log("getCelHeatIndexAVG returned no data"); 
+                    }
+                }
+            }
+            else{
+                const data      = await response.text();
+                console.log(data); 
+            }
+        }
+        catch(err){ 
+            console.error('getCelHeatIndexAVG error: ', err.message); 
+        }
+        return [] 
+    }
+
+    const getFarTempAVG = async (start,end)=>{ 
+        // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS 
+        const controller    = new AbortController(); 
+        const signal        = controller.signal; 
+        const id            = setTimeout(()=>{controller.abort()},60000); 
+        const URL           = `/api/mmar/temperature/fahrenheit/${start}/${end}`;  
+
+        try { 
+            const response  = await fetch(URL,{ method: 'GET', signal: signal  }); 
+            if (response.ok){
+                const data      = await response.json(); 
+                let keys        = Object.keys(data); 
+
+                if(keys.includes("status")){ 
+
+                    if(data["status"] == "found" ){ 
+                        // console.log(data["data"]  )   
+                        return data["data"]; 
+                    }
+                    if(data["status"] == "failed"){
+                        console.log("getFarTempAVG returned no data"); 
+                    }
+                }
+            }
+            else{
+                const data      = await response.text();
+                console.log(data); 
+            }
+        }
+        catch(err){ 
+            console.error('getFarTempAVG error: ', err.message); 
+        }
+        return [] 
+    }
+
+    const getFarHeatIndexAVG = async (start,end)=>{ 
+        // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS 
+        const controller    = new AbortController(); 
+        const signal        = controller.signal; 
+        const id            = setTimeout(()=>{controller.abort()},60000); 
+        const URL           = `/api/mmar/hi/fahrenheit/${start}/${end}`;  
+
+        try { 
+            const response  = await fetch(URL,{ method: 'GET', signal: signal  }); 
+            if (response.ok){
+                const data      = await response.json(); 
+                let keys        = Object.keys(data); 
+
+                if(keys.includes("status")){ 
+
+                    if(data["status"] == "found" ){ 
+                        // console.log(data["data"]  )   
+                        return data["data"]; 
+                    }
+                    if(data["status"] == "failed"){
+                        console.log("getFarHeatIndexAVG returned no data"); 
+                    }
+                }
+            }
+            else{
+                const data      = await response.text();
+                console.log(data); 
+            }
+        }
+        catch(err){ 
+            console.error('getFarHeatIndexAVG error: ', err.message); 
+        }
+        return [] 
+    }
+
+    const getHumidAVG = async (start,end)=>{ 
+        // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS 
+        const controller    = new AbortController(); 
+        const signal        = controller.signal; 
+        const id            = setTimeout(()=>{controller.abort()},60000); 
+        const URL           = `/api/mmar/humidity/${start}/${end}`;  
+
+        try { 
+            const response  = await fetch(URL,{ method: 'GET', signal: signal  }); 
+            if (response.ok){
+                const data      = await response.json(); 
+                let keys        = Object.keys(data); 
+
+                if(keys.includes("status")){ 
+
+                    if(data["status"] == "found" ){ 
+                        // console.log(data["data"]  )   
+                        return data["data"]; 
+                    }
+                    if(data["status"] == "failed"){
+                        console.log("getHumidAVG returned no data"); 
+                    }
+                }
+            }
+            else{
+                const data      = await response.text();
+                console.log(data); 
+            }
+        }
+        catch(err){ 
+            console.error('getHumidAVG error: ', err.message); 
+        }
+        return [] 
+    }
+
+    const getMositAVG = async (start,end)=>{ 
+        // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS 
+        const controller    = new AbortController(); 
+        const signal        = controller.signal; 
+        const id            = setTimeout(()=>{controller.abort()},60000); 
+        const URL           = `/api/mmar/soilmoisture/${start}/${end}`;  
+
+        try { 
+            const response  = await fetch(URL,{ method: 'GET', signal: signal  }); 
+            if (response.ok){
+                const data      = await response.json(); 
+                let keys        = Object.keys(data); 
+
+                if(keys.includes("status")){ 
+
+                    if(data["status"] == "found" ){ 
+                        // console.log(data["data"]  )   
+                        return data["data"]; 
+                    }
+                    if(data["status"] == "failed"){
+                        console.log("getMositAVG returned no data"); 
+                    }
+                }
+            }
+            else{
+                const data      = await response.text();
+                console.log(data); 
+            }
+        }
+        catch(err){ 
+            console.error('getMositAVG error: ', err.message); 
+        }
+        return [] 
+    }
+
    
  
  
     return { 
     // EXPORTS	
     getAllInRange,
-    getReserveAVG,
-    updatePasscode,
+    getCelTempAVG,
+    getCelHeatIndexAVG,
+    getFarTempAVG,
+    getFarHeatIndexAVG,
+    getHumidAVG,
+    getMositAVG,
         
        }
 },{ persist: true  });

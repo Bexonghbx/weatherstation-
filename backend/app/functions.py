@@ -51,9 +51,8 @@ class DB:
     #  WEATHER STATION FUNCTIONS  #
     ###############################
     
-    # 1. FUNCTION INSERTS DATA IN TO THE WEATHER COLLECTION
+    # INSERTS DATA IN TO THE WEATHER COLLECTION
     def weatherUpdate(self,data):
-        '''ADD A NEW STORAGE LOCATION TO COLLECTION'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
             result      = remotedb.ELET2415.weather.insert_one(data)
@@ -66,9 +65,8 @@ class DB:
             return True
 
     
-    # 2. CREATE FUNCTION TO RETRIEVE ALL DOCUMENTS FROM RADAR COLLECT BETWEEN SPECIFIED DATE RANGE. MUST RETURN A LIST OF DOCUMENTS
+    #  GATHERS ALL DATA WITHIN A GIVEN TIMEFRAME AND RETURNS IT AS A LIST.
     def getAllInRange(self,start, end):
-        '''RETURNS A LIST OF OBJECTS. THAT FALLS WITHIN THE START AND END DATE RANGE'''
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
             result      = list(remotedb.ELET2415.weather.find({'timestamp':{'$gte':int(start),'$lte':int(end)}},{'_id':0}).sort([('timestamp',1)]))
@@ -80,46 +78,78 @@ class DB:
 
 
     # 3. CREATE A FUNCTION TO COMPUTE THE ARITHMETIC AVERAGE ON THE 'reserve' FEILED/VARIABLE, USING ALL DOCUMENTS FOUND BETWEEN SPECIFIED START AND END TIMESTAMPS. RETURNS A LIST WITH A SINGLE OBJECT INSIDE
-    def tempAVG(self,start, end):
-        '''RETURNS MIN, MAX, AVG AND RANGE FOR HUMIDITY. THAT FALLS WITHIN THE START AND END DATE RANGE'''
+    
+    
+    
+    # FINDS THE AVERAGE HUMIDITY OF THE AIR BETWEEN TWO DATES AND RETURNS THEM IN A LIST
+    def humidityMMAR(self,start, end):
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = list(remotedb.ELET2415.weather.aggregate([{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': "",'reserve':{'$push':"$$ROOT.reserve"}}},{'$project':{'avg':{'$avg':'$reserve'}, '_id':0}}]))
+            result      = list(remotedb.ELET2415.weather.aggregate([{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': '','humidity':{'$push':"$$ROOT.humidity"}}},{'$project':{'max':{'$max':'$humidity'},'min':{'$min':'$humidity'},'avg':{'$avg':'$humidity'},'range':{'$subtract':[{'$max':'$humidity'},{'$min':'$humidity'}]}}}]))
         except Exception as e:
             msg = str(e)
-            print("reserveAVG error ",msg)            
+            print("humidityMMAR error ",msg)            
+        else:                  
+            return result
+
+    # FINDS THE AVERAGE HUMIDITY OF THE AIR BETWEEN TWO DATES AND RETURNS THEM IN A LIST
+    def soilMoistureMMAR(self,start, end):
+        try:
+            remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
+            result      = list(remotedb.ELET2415.weather.aggregate([{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': '','moisture':{'$push':"$$ROOT.soilmoisture"}}},{'$project':{'max':{'$max':'$moisture'},'min':{'$min':'$moisture'},'avg':{'$avg':'$moisture'},'range':{'$subtract':[{'$max':'$moisture'},{'$min':'$moisture'}]}}}]))
+        except Exception as e:
+            msg = str(e)
+            print("soilMoistureMMAR error ",msg)            
+        else:                  
+            return result
+        
+    # FINDS THE AVERAGE AIR TEMPERATURE IN FAHRENHEIT AND CELSIUS BETWEEN TWO DATES AND RETURNS THEM IN A LIST
+    def celTemperatureMMAR(self,start, end):
+        try:
+            remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
+            result      = list(remotedb.ELET2415.weather.aggregate( [{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': "",'temperature':{'$push':"$$ROOT.temperature"}}},{'$project':{'max':{'$max':'$temperature'},'min':{'$min':'$temperature'},'avg':{'$avg':'$temperature'},'range':{'$subtract':[{'$max':'$temperature'},{'$min':'$temperature'}]}}}]))
+        except Exception as e:
+            msg = str(e)
+            print("celTemperatureMMAR error ",msg)            
         else:                  
             return result
     
-    
-    # 4. CREATE A FUNCTION THAT INSERT/UPDATE A SINGLE DOCUMENT IN THE 'code' COLLECTION WITH THE PROVIDED PASSCODE
-    def updatePasscode(self,code):
-        '''ADD A NEW STORAGE LOCATION TO COLLECTION'''
+    # FINDS THE AVERAGE AIR TEMPERATURE IN FAHRENHEIT AND CELSIUS BETWEEN TWO DATES AND RETURNS THEM IN A LIST
+    def farTemperatureMMAR(self,start, end):
         try:
             remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = remotedb.ELET2415.code.find_one_and_update({"type":"passcode"},{"$set":{"code":int(code)}}, upsert=True)
+            result      = list(remotedb.ELET2415.weather.aggregate( [{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': '','temperature':{'$push':"$$ROOT.temperatureFar"}}},{'$project':{'max':{'$max':'$temperature'},'min':{'$min':'$temperature'},'avg':{'$avg':'$temperature'},'range':{'$subtract':[{'$max':'$temperature'},{'$min':'$temperature'}]}}}]))
         except Exception as e:
             msg = str(e)
-            if "duplicate" not in msg:
-                print("updatePasscode error ",msg)
-            return False
+            print("farTemperatureMMAR error ",msg)            
         else:                  
-            return True
+            return result
+
+    # FINDS THE AVERAGE HEAT INDEX IN FAHRENHEIT AND CELSIUS BETWEEN TWO DATES AND RETURNS THEM IN A LIST
+    def farHeatIndexMMAR(self,start, end):
+        try:
+            remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
+            result      = list(remotedb.ELET2415.weather.aggregate( [{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': "",'heatindex':{'$push':"$$ROOT.heatindex"}}},{'$project':{'max':{'$max':'$heatindex'},'min':{'$min':'$heatindex'},'avg':{'$avg':'$heatindex'},'range':{'$subtract':[{'$max':'$heatindex'},{'$min':'$heatindex'}]}}}]))
+        except Exception as e:
+            msg = str(e)
+            print("farHeatIndexMMAR error ",msg)            
+        else:                  
+            return result
+    
+    # FINDS THE AVERAGE HEAT INDEX IN FAHRENHEIT AND CELSIUS BETWEEN TWO DATES AND RETURNS THEM IN A LIST
+    def celHeatIndexMMAR(self,start, end):
+        try:
+            remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
+            result      = list(remotedb.ELET2415.weather.aggregate( [{'$match':{'timestamp':{'$gte':int(start),'$lte':int(end)}}},{'$group':{'_id': '','heatindex':{'$push':"$$ROOT.heatindexCel"}}},{'$project':{'max':{'$max':'$heatindex'},'min':{'$min':'$heatindex'},'avg':{'$avg':'$heatindex'},'range':{'$subtract':[{'$max':'$heatindex'},{'$min':'$heatindex'}]}}}]))
+        except Exception as e:
+            msg = str(e)
+            print("celHeatIndexMMAR error ",msg)            
+        else:                  
+            return result
+
    
     
-    # 5. CREATE A FUNCTION THAT RETURNS A COUNT, OF THE NUMBER OF DOCUMENTS FOUND IN THE 'code' COLLECTION WHERE THE 'code' FEILD EQUALS TO THE PROVIDED PASSCODE.
-    #    REMEMBER, THE SCHEMA FOR THE SINGLE DOCUMENT IN THE 'code' COLLECTION IS {"type":"passcode","code":"0070"}
-    def checkPasscode(self,code):
-        '''ADD A NEW STORAGE LOCATION TO COLLECTION'''
-        try:
-            remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            print("checkPasscode ",code)
-            result      = remotedb.ELET2415.code.count_documents({"code":int(code)})
-        except Exception as e:
-            msg = str(e)
-            print("checkPasscode error ",msg)
-        else:               
-            return result
+    
 
 
    

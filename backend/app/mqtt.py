@@ -93,18 +93,6 @@ class MQTT:
         except Exception as e:
             print(f"MQTT: Weather Error: {str(e)}")
 
-    def toggle(self,client, userdata, msg):    
-        '''Process messages from Frontend'''
-        try:
-            topic   = msg.topic
-            payload = msg.payload.decode("utf-8")
-            # print(payload) # UNCOMMENT WHEN DEBUGGING
-            update  = loads(payload) # CONVERT FROM JSON STRING TO JSON OBJECT              
-            print(update)
-
-        except Exception as e:
-            print(f"MQTT: toggle Error - {str(e)}")
-
 
 
      
