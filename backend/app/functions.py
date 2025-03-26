@@ -75,6 +75,16 @@ class DB:
             print("getAllInRange error ",msg)            
         else:                  
             return result
+    
+    def getSnapshot(self):
+        try:
+            remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
+            result      = list(remotedb.ELET2415.weather.find({},{'_id':0}).sort([('timestamp',-1)]).limit(10))
+        except Exception as e:
+            msg = str(e)
+            print("getAllInRange error ",msg)            
+        else:                  
+            return result
 
 
     # 3. CREATE A FUNCTION TO COMPUTE THE ARITHMETIC AVERAGE ON THE 'reserve' FEILED/VARIABLE, USING ALL DOCUMENTS FOUND BETWEEN SPECIFIED START AND END TIMESTAMPS. RETURNS A LIST WITH A SINGLE OBJECT INSIDE

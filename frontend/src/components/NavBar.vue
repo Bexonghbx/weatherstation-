@@ -16,7 +16,11 @@
 
                             <RouterLink class="route" to="/stream">
                                 <VBtn class="text-subtitle-2" density="compact" color="primary" :variant="(route.name == 'Stream')? 'tonal':'text'">Stream</VBtn> 
-                            </RouterLink>    
+                            </RouterLink>   
+                            
+                            <RouterLink class="route" to="/snapshot">
+                                <VBtn class="text-subtitle-2" density="compact" color="primary" :variant="(route.name == 'Snapshot')? 'tonal':'text'">Snapshot</VBtn> 
+                            </RouterLink>
 
                         </VCol>
                         <VCol cols="1" align="right">

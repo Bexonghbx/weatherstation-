@@ -26,7 +26,6 @@ from math import floor
 #####################################
 
 
-# 1. CREATE ROUTE FOR '/api/set/combination'
 @app.route('/api/weather/<start>/<end>', methods=['GET']) 
 def get_all(start,end):   
    
@@ -43,8 +42,22 @@ def get_all(start,end):
 
     # FILE DATA NOT EXIST
     return jsonify({"status":"not found","data":[]})
-    
-# 2. CREATE ROUTE FOR '/api/check/combination'
+
+@app.route('/api/weather/snapshot', methods=['GET']) 
+def get_snap():   
+   
+    if request.method == "GET":
+        try:
+            get = mongo.getSnapshot()
+            if get:
+                return jsonify({"status":"found","data": get})
+            
+        except Exception as e:
+            print(f"getAllInRange error: f{str(e)}")
+
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":[]})
+
 @app.route('/api/mmar/temperature/celsius/<start>/<end>', methods=['GET']) 
 def get_temp_celsius(start,end):   
    
